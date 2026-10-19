@@ -22,11 +22,15 @@ first path segment, or the first two for a scoped package. Resolve `.` or the
 requested `./subpath` through the package map and then apply the same three
 candidate IDs below `root`. Exact keys beat `*` patterns; patterns are ordered
 by descending key length then lexical order. Replace `*` in the target with the
-matched subpath. A target can be a condition object; use the first key in
-`conditions`, defaulting to `['node','default']`. An existing package with no
-matching export is unresolved. Without a matching package, retain project-root
-resolution. Duplicate package names and malformed package maps are TypeErrors
-with `graph.packages[i]...` paths.
+matched subpath. A target is a string, `null` (an explicitly blocked target), or
+a condition object whose values are again targets; any other target value (for
+example a number, boolean or array) is malformed. Use the first key in
+`conditions`, defaulting to `['node','default']`.
+An existing package with no matching export is unresolved. Without a matching
+package, retain project-root resolution. Duplicate package names and malformed
+package maps, including a non-string/non-null/non-object target, are TypeErrors
+whose message carries the `graph.packages[i].exports[...]` path of the offending
+entry, e.g. `graph.packages[0].exports["."].node`.
 
 Record forms are:
 
@@ -93,7 +97,9 @@ fall back to stars. Keep the first canonical duplicate module and first
 duplicate explicit name; continue unrelated work.
 
 Diagnostics are deduplicated and sorted by `module,code,name,from,message`;
-missing sort fields compare first. Use only:
+missing sort fields compare first. An absent field and the empty string are
+different values: `name: ""` and a diagnostic without `name` are distinct
+entries, both in sorting and in deduplication. Use only:
 
 ```text
 DUPLICATE_MODULE  later module descriptor; module
@@ -175,12 +181,21 @@ ignored. A failed load/update/patch, conflict, unknown module, or pre-load
 operation leaves state unchanged.
 
 The one-shot CLI supports complete output, `--module`, `--diagnostics`, stdin
-`-`, and `--pretty`. Bad options and unknown modules fail with non-empty stderr.
+`-`, and `--pretty`. Complete output prints the whole link result
+`{modules, diagnostics, cycles}`. `--module <id>` prints **only that module's
+record** (`{exports, ambiguous}`) with no wrapping envelope, and `--diagnostics`
+prints **only the diagnostics array** with no wrapping envelope. Bad options and
+unknown modules fail with non-empty stderr.
 `--serve` accepts one JSON request per non-empty line for `load`, `query`, `explain`,
 `replace`, `remove`, and non-empty atomic `patch`; every line gets one response
 and malformed input does not terminate the process. `--watch file` emits an
 initial result and later results after changes, reports bad files without
 discarding the last valid state, and recovers after repair.
+
+`src/linker.js` and `src/source-parser.js` are library modules: they must never
+terminate the process (`process.exit`, `process.abort`, `process.reallyExit` and
+equivalents are out of contract). The verifier grades the complete test summary
+and treats a termination call in those files as a failed run.
 
 Keep results deterministic and practical for deep chains, reverse declaration
 order, cycles, diamonds, ambiguity, duplicates, prototype-colliding names,
