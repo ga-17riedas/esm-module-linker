@@ -1,0 +1,18 @@
+{
+  "modules": [
+    {
+      "id": "/src/base.js",
+      "exports": [
+        { "type": "local", "name": "value", "local": "value" },
+        { "type": "local", "name": "default", "local": "main" }
+      ]
+    },
+    {
+      "id": "/src/index.js",
+      "exports": [
+        { "type": "star", "from": "./base" },
+        { "type": "namespace", "name": "base", "from": "./base" }
+      ]
+    }
+  ]
+}

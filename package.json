@@ -1,0 +1,12 @@
+{
+  "name": "esm-module-linker-task",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A fixed-point ESM export linker and incremental source-front-end exercise",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "link": "node src/cli.js"
+  }
+}

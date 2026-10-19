@@ -1,0 +1,12 @@
+{
+  "modules": [
+    {
+      "id": "/lib/base.js",
+      "source": "// fixture used by the source-front-end smoke check\nconst value = 1\nexport { value as answer }"
+    },
+    {
+      "id": "/lib/index.js",
+      "source": "export * from './base.js';\nexport * as namespace from './base'"
+    }
+  ]
+}
